@@ -4,6 +4,15 @@ import psycopg
 from psycopg import ClientCursor, connection as _connection
 from psycopg.rows import dict_row
 
+dsn = {
+    'dbname': 'movies_database',
+    'user': 'app',
+    'password': '123qwe',
+    'host': 'localhost',
+    'port': 5432,
+    'options': '-c search_path=content',
+}
+
 
 def load_from_sqlite(connection: sqlite3.Connection, pg_conn: _connection):
     """Основной метод загрузки данных из SQLite в Postgres"""
