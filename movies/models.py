@@ -1,12 +1,13 @@
 import uuid
 
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.utils.translation import gettext_lazy as _
 from django.db import models
 
 
 class TimeStampedMixin(models.Model):
-    created = models.DateTimeField(auto_now_add=True)
-    modified = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(_('created'), auto_now_add=True)
+    modified = models.DateTimeField(_('modified'), auto_now_add=True)
 
     class Meta:
         abstract = True
@@ -20,32 +21,32 @@ class UUIDMixin(models.Model):
 
 
 class Genre(UUIDMixin, TimeStampedMixin):
-    name = models.CharField('name', max_length=255)
-    description = models.TextField('description', blank=True)
+    name = models.CharField(_('name'), max_length=255)
+    description = models.TextField(_('description'), blank=True)
 
     class Meta:
         db_table = "content\".\"genre"
-        verbose_name = 'Жанр'
-        verbose_name_plural = 'Жанры'
+        verbose_name = _('Genre')
+        verbose_name_plural = _('Genres')
 
 
 class Person(UUIDMixin, TimeStampedMixin):
-    full_name = models.CharField('full_name', max_length=255)
+    full_name = models.CharField(_('full_name'), max_length=255)
 
     class Meta:
         db_table = "content\".\"person"
-        verbose_name = 'Актёр'
-        verbose_name_plural = 'Актёры'
+        verbose_name = _('Actor')
+        verbose_name_plural = _('Actors')
 
 
 class Filmwork(UUIDMixin, TimeStampedMixin):
-    title = models.CharField('title', max_length=255)
-    description = models.TextField('description', blank=True)
-    creation_date = models.DateField()
-    rating = models.FloatField('rating', blank=True,
+    title = models.CharField(_('title'), max_length=255)
+    description = models.TextField(_('description'), blank=True)
+    creation_date = models.DateField(_('creation_date'))
+    rating = models.FloatField(_('rating'), blank=True,
                               validators=[MinValueValidator(0),
                                           MaxValueValidator(100)])
-    type = models.CharField('type', max_length=255)
+    type = models.CharField(_('type'), max_length=255)
     genres = models.ManyToManyField(Genre, through='GenreFilmwork')
     persons = models.ManyToManyField(Person, through='PersonFilmwork')
 
@@ -70,12 +71,11 @@ class GenreFilmwork(UUIDMixin):
 class PersonFilmwork(UUIDMixin):
     film_work = models.ForeignKey('Filmwork', on_delete=models.CASCADE)
     person = models.ForeignKey('Person', on_delete=models.CASCADE)
-    role = models.TextField('role')
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "content\".\"person_film_work"
-        unique_together = (('film_work_id', 'person_id'),)
+        # unique_together = (('film_work_id', 'person_id'),)
         verbose_name = 'Актёр'
         verbose_name_plural = 'Актёры'
 
