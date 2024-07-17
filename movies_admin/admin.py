@@ -30,3 +30,5 @@ class FilmworkAdmin(admin.ModelAdmin):
     list_display = ('title', 'type', 'creation_date', 'rating',)
     list_filter = ('type', 'rating',)
     search_fields = ('title', 'description', 'id', 'genre')
+    exclude = ('certificate',)
+

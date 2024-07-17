@@ -49,6 +49,7 @@ class Filmwork(UUIDMixin, TimeStampedMixin):
     type = models.CharField(_('type'), max_length=255)
     genres = models.ManyToManyField(Genre, through='GenreFilmwork')
     persons = models.ManyToManyField(Person, through='PersonFilmwork')
+    certificate = models.CharField(_('certificate'), max_length=512, blank=True)
 
     class Meta:
         db_table = "content\".\"film_work"
