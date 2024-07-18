@@ -76,45 +76,67 @@ class SQLiteLoader:
         tables = cursor.fetchall()
         logger.debug(f"Tables in the database: {tables}")
         if not tables:
-            raise Exception("No tables found in the database. Please check your database file.")
+            raise Exception(
+                "No tables found in the database. Please check your database file."
+            )
 
-    def load_film_works(self, batch_size: int = 100) -> Generator[List[FilmWork], None, None]:
+    def load_film_works(
+        self, batch_size: int = 100
+    ) -> Generator[List[FilmWork], None, None]:
         cursor = self.connection.cursor()
         cursor.row_factory = sqlite3.Row
         logger.debug("Executing query for film_work")
-        cursor.execute("SELECT id, title, description, creation_date, rating, type, created_at, updated_at FROM film_work")
+        cursor.execute(
+            "SELECT id, title, description, creation_date, rating, type, created_at, updated_at FROM film_work"
+        )
         while batch := cursor.fetchmany(batch_size):
             yield [FilmWork(**dict(row)) for row in batch]
 
-    def load_genres(self, batch_size: int = 100) -> Generator[List[Genre], None, None]:
+    def load_genres(
+        self, batch_size: int = 100
+    ) -> Generator[List[Genre], None, None]:
         cursor = self.connection.cursor()
         cursor.row_factory = sqlite3.Row
         logger.debug("Executing query for genre")
-        cursor.execute("SELECT id, name, description, created_at, updated_at FROM genre")
+        cursor.execute(
+            "SELECT id, name, description, created_at, updated_at FROM genre"
+        )
         while batch := cursor.fetchmany(batch_size):
             yield [Genre(**dict(row)) for row in batch]
 
-    def load_persons(self, batch_size: int = 100) -> Generator[List[Person], None, None]:
+    def load_persons(
+        self, batch_size: int = 100
+    ) -> Generator[List[Person], None, None]:
         cursor = self.connection.cursor()
         cursor.row_factory = sqlite3.Row
         logger.debug("Executing query for person")
-        cursor.execute("SELECT id, full_name, created_at, updated_at FROM person")
+        cursor.execute(
+            "SELECT id, full_name, created_at, updated_at FROM person"
+        )
         while batch := cursor.fetchmany(batch_size):
             yield [Person(**dict(row)) for row in batch]
 
-    def load_genre_film_works(self, batch_size: int = 100) -> Generator[List[GenreFilmWork], None, None]:
+    def load_genre_film_works(
+        self, batch_size: int = 100
+    ) -> Generator[List[GenreFilmWork], None, None]:
         cursor = self.connection.cursor()
         cursor.row_factory = sqlite3.Row
         logger.debug("Executing query for genre_film_work")
-        cursor.execute("SELECT id, genre_id, film_work_id, created_at FROM genre_film_work")
+        cursor.execute(
+            "SELECT id, genre_id, film_work_id, created_at FROM genre_film_work"
+        )
         while batch := cursor.fetchmany(batch_size):
             yield [GenreFilmWork(**dict(row)) for row in batch]
 
-    def load_person_film_works(self, batch_size: int = 100) -> Generator[List[PersonFilmWork], None, None]:
+    def load_person_film_works(
+        self, batch_size: int = 100
+    ) -> Generator[List[PersonFilmWork], None, None]:
         cursor = self.connection.cursor()
         cursor.row_factory = sqlite3.Row
         logger.debug("Executing query for person_film_work")
-        cursor.execute("SELECT id, film_work_id, person_id, role, created_at FROM person_film_work")
+        cursor.execute(
+            "SELECT id, film_work_id, person_id, role, created_at FROM person_film_work"
+        )
         while batch := cursor.fetchmany(batch_size):
             yield [PersonFilmWork(**dict(row)) for row in batch]
 
@@ -133,48 +155,93 @@ class PostgresSaver:
     def save_film_works(self, film_works: List[FilmWork]):
         with self.connection.cursor() as cursor:
             for film_work in film_works:
-                cursor.execute("""
+                cursor.execute(
+                    """
                     INSERT INTO content.film_work (id, title, description, creation_date, rating, type, created, modified)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                     ON CONFLICT (id) DO NOTHING;
-                """, (film_work.id, film_work.title, film_work.description, film_work.creation_date, film_work.rating, film_work.type, film_work.created_at, film_work.updated_at))
+                """,
+                    (
+                        film_work.id,
+                        film_work.title,
+                        film_work.description,
+                        film_work.creation_date,
+                        film_work.rating,
+                        film_work.type,
+                        film_work.created_at,
+                        film_work.updated_at,
+                    ),
+                )
 
     def save_genres(self, genres: List[Genre]):
         with self.connection.cursor() as cursor:
             for genre in genres:
-                cursor.execute("""
+                cursor.execute(
+                    """
                     INSERT INTO content.genre (id, name, description, created, modified)
                     VALUES (%s, %s, %s, %s, %s)
                     ON CONFLICT (id) DO NOTHING;
-                """, (genre.id, genre.name, genre.description, genre.created_at, genre.updated_at))
+                """,
+                    (
+                        genre.id,
+                        genre.name,
+                        genre.description,
+                        genre.created_at,
+                        genre.updated_at,
+                    ),
+                )
 
     def save_persons(self, persons: List[Person]):
         with self.connection.cursor() as cursor:
             for person in persons:
-                cursor.execute("""
+                cursor.execute(
+                    """
                     INSERT INTO content.person (id, full_name, created, modified)
                     VALUES (%s, %s, %s, %s)
                     ON CONFLICT (id) DO NOTHING;
-                """, (person.id, person.full_name, person.created_at, person.updated_at))
+                """,
+                    (
+                        person.id,
+                        person.full_name,
+                        person.created_at,
+                        person.updated_at,
+                    ),
+                )
 
     def save_genre_film_works(self, genre_film_works: List[GenreFilmWork]):
         with self.connection.cursor() as cursor:
             for genre_film_work in genre_film_works:
-                cursor.execute("""
+                cursor.execute(
+                    """
                     INSERT INTO content.genre_film_work (id, genre_id, film_work_id, created)
                     VALUES (%s, %s, %s, %s)
                     ON CONFLICT (id) DO NOTHING;
-                """, (genre_film_work.id, genre_film_work.genre_id, genre_film_work.film_work_id, genre_film_work.created_at))
+                """,
+                    (
+                        genre_film_work.id,
+                        genre_film_work.genre_id,
+                        genre_film_work.film_work_id,
+                        genre_film_work.created_at,
+                    ),
+                )
 
     def save_person_film_works(self, person_film_works: List[PersonFilmWork]):
         with self.connection.cursor() as cursor:
             for person_film_work in person_film_works:
                 try:
-                    cursor.execute("""
+                    cursor.execute(
+                        """
                         INSERT INTO content.person_film_work (id, film_work_id, person_id, role, created)
                         VALUES (%s, %s, %s, %s, %s);
-                    """, (person_film_work.id, person_film_work.film_work_id, person_film_work.person_id,
-                          person_film_work.role, person_film_work.created_at))
+                    """,
+                        (
+                            person_film_work.id,
+                            person_film_work.film_work_id,
+                            person_film_work.person_id,
+                            person_film_work.role,
+                            person_film_work.created_at,
+                        ),
+                    )
                 except psycopg.errors.UniqueViolation as e:
                     logger.debug(f"Ignoring duplicate entry: {e}")
                     self.connection.rollback()
@@ -196,7 +263,7 @@ def load_from_sqlite(connection: sqlite3.Connection, pg_conn: _connection):
         'genres': [],
         'persons': [],
         'genre_film_works': [],
-        'person_film_works': []
+        'person_film_works': [],
     }
 
     for film_works_batch in sqlite_loader.load_film_works():

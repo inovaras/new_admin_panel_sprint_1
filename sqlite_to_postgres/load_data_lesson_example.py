@@ -31,7 +31,10 @@ if __name__ == '__main__':
 
         # Одиночный insert
         data = ('ca211dbc-a6c6-44a5-b238-39fa16bbfe6c', 'Иван Иванов')
-        cursor.execute("""INSERT INTO content.temp_table (id, name) VALUES (%s, %s)""", data)
+        cursor.execute(
+            """INSERT INTO content.temp_table (id, name) VALUES (%s, %s)""",
+            data,
+        )
 
         # Множественный insert
         # Его можно выполнить с помощью функции execute_values, которая внутри себя
@@ -42,12 +45,14 @@ if __name__ == '__main__':
             ('b8531efb-c49d-4111-803f-725c3abc0f5e', 'Василий Васильевич'),
             ('2d5c50d0-0bb4-480c-beab-ded6d0760269', 'Пётр Петрович'),
         ]
-        cursor.executemany('INSERT INTO content.temp_table (id, name) VALUES (%s, %s)', data)
+        cursor.executemany(
+            'INSERT INTO content.temp_table (id, name) VALUES (%s, %s)', data
+        )
 
         # Пример использования UPSERT — обновляем уже существующую запись
         data = ('ca211dbc-a6c6-44a5-b238-39fa16bbfe6c', 'Иван Петров')
         cursor.execute(
-        """
+            """
         INSERT INTO content.temp_table (id, name)
         VALUES (%s, %s)
         ON CONFLICT (id) DO UPDATE SET name=EXCLUDED.name
@@ -55,7 +60,9 @@ if __name__ == '__main__':
             data,
         )
 
-        cursor.execute("""SELECT name FROM content.temp_table WHERE id = 'ca211dbc-a6c6-44a5-b238-39fa16bbfe6c'""")
+        cursor.execute(
+            """SELECT name FROM content.temp_table WHERE id = 'ca211dbc-a6c6-44a5-b238-39fa16bbfe6c'"""
+        )
         result = cursor.fetchone()
         logger.debug(f'Результат выполнения команды UPSERT {result}')
 
@@ -66,9 +73,13 @@ if __name__ == '__main__':
         data.write('ca211dbc-a6c6-44a5-b238-39fa16bbfe6c,Михаил Михайлович')
         data.seek(0)
 
-        with cursor.copy("""COPY content.temp_table FROM STDIN (FORMAT 'csv', HEADER false)""") as copy:
+        with cursor.copy(
+            """COPY content.temp_table FROM STDIN (FORMAT 'csv', HEADER false)"""
+        ) as copy:
             copy.write(data.read())
 
-        cursor.execute("""SELECT name FROM content.temp_table WHERE id = 'ca211dbc-a6c6-44a5-b238-39fa16bbfe6c'""")
+        cursor.execute(
+            """SELECT name FROM content.temp_table WHERE id = 'ca211dbc-a6c6-44a5-b238-39fa16bbfe6c'"""
+        )
         result = cursor.fetchone()
         logger.debug(f'Результат выполнения команды COPY {result}')
