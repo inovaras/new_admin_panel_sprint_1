@@ -1,13 +1,22 @@
+import datetime
+import logging
 import os
 import random
+import sys
 import uuid
-import psycopg
 
-import datetime
+import psycopg
 from dotenv import load_dotenv
 from faker import Faker
 
 if __name__ == '__main__':
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+    handler = logging.StreamHandler(stream=sys.stdout)
+    formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
     fake = Faker()
     env_path = os.path.join(os.path.dirname(__file__), '..', 'config', '.env')
     load_dotenv(dotenv_path=env_path)
@@ -38,8 +47,10 @@ if __name__ == '__main__':
         for film_work_id in film_works_ids:
             for person_id in random.sample(persons_ids, 5):
                 role = random.choice(roles)
-                person_film_work_data.append((str(uuid.uuid4()), film_work_id, person_id, role, now))
+                person_film_work_data.append(
+                    (str(uuid.uuid4()), film_work_id, person_id, role, now)
+                )
         query = 'INSERT INTO person_film_work (id, film_work_id, person_id, role, created) VALUES (%s, %s, %s, %s, %s)'
         cur.executemany(query, person_film_work_data)
         conn.commit()
-        print("Process done!")
+        logger.debug("Process done!")
