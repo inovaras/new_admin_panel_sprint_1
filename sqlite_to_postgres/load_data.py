@@ -1,11 +1,22 @@
+import logging
 import os
 import sqlite3
-import psycopg
-from psycopg import ClientCursor, connection as _connection
-from psycopg.rows import dict_row
+import sys
 from dataclasses import dataclass
-from typing import List, Generator
+from typing import Generator, List
+
+import psycopg
 from dotenv import load_dotenv
+from psycopg import ClientCursor
+from psycopg import connection as _connection
+from psycopg.rows import dict_row
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+handler = logging.StreamHandler(stream=sys.stdout)
+formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 
 @dataclass
@@ -63,14 +74,14 @@ class SQLiteLoader:
         cursor = self.connection.cursor()
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
         tables = cursor.fetchall()
-        print("Tables in the database:", tables)
+        logger.debug(f"Tables in the database: {tables}")
         if not tables:
             raise Exception("No tables found in the database. Please check your database file.")
 
     def load_film_works(self, batch_size: int = 100) -> Generator[List[FilmWork], None, None]:
         cursor = self.connection.cursor()
         cursor.row_factory = sqlite3.Row
-        print("Executing query for film_work")
+        logger.debug("Executing query for film_work")
         cursor.execute("SELECT id, title, description, creation_date, rating, type, created_at, updated_at FROM film_work")
         while batch := cursor.fetchmany(batch_size):
             yield [FilmWork(**dict(row)) for row in batch]
@@ -78,7 +89,7 @@ class SQLiteLoader:
     def load_genres(self, batch_size: int = 100) -> Generator[List[Genre], None, None]:
         cursor = self.connection.cursor()
         cursor.row_factory = sqlite3.Row
-        print("Executing query for genre")
+        logger.debug("Executing query for genre")
         cursor.execute("SELECT id, name, description, created_at, updated_at FROM genre")
         while batch := cursor.fetchmany(batch_size):
             yield [Genre(**dict(row)) for row in batch]
@@ -86,7 +97,7 @@ class SQLiteLoader:
     def load_persons(self, batch_size: int = 100) -> Generator[List[Person], None, None]:
         cursor = self.connection.cursor()
         cursor.row_factory = sqlite3.Row
-        print("Executing query for person")
+        logger.debug("Executing query for person")
         cursor.execute("SELECT id, full_name, created_at, updated_at FROM person")
         while batch := cursor.fetchmany(batch_size):
             yield [Person(**dict(row)) for row in batch]
@@ -94,7 +105,7 @@ class SQLiteLoader:
     def load_genre_film_works(self, batch_size: int = 100) -> Generator[List[GenreFilmWork], None, None]:
         cursor = self.connection.cursor()
         cursor.row_factory = sqlite3.Row
-        print("Executing query for genre_film_work")
+        logger.debug("Executing query for genre_film_work")
         cursor.execute("SELECT id, genre_id, film_work_id, created_at FROM genre_film_work")
         while batch := cursor.fetchmany(batch_size):
             yield [GenreFilmWork(**dict(row)) for row in batch]
@@ -102,7 +113,7 @@ class SQLiteLoader:
     def load_person_film_works(self, batch_size: int = 100) -> Generator[List[PersonFilmWork], None, None]:
         cursor = self.connection.cursor()
         cursor.row_factory = sqlite3.Row
-        print("Executing query for person_film_work")
+        logger.debug("Executing query for person_film_work")
         cursor.execute("SELECT id, film_work_id, person_id, role, created_at FROM person_film_work")
         while batch := cursor.fetchmany(batch_size):
             yield [PersonFilmWork(**dict(row)) for row in batch]
@@ -165,11 +176,11 @@ class PostgresSaver:
                     """, (person_film_work.id, person_film_work.film_work_id, person_film_work.person_id,
                           person_film_work.role, person_film_work.created_at))
                 except psycopg.errors.UniqueViolation as e:
-                    print(f"Ignoring duplicate entry: {e}")
+                    logger.debug(f"Ignoring duplicate entry: {e}")
                     self.connection.rollback()
                     continue
                 except Exception as e:
-                    print(f"Error inserting record: {e}")
+                    logger.error(f"Error inserting record: {e}")
                     self.connection.rollback()
                     continue
                 else:

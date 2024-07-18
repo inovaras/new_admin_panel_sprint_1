@@ -1,6 +1,6 @@
-from django.core.validators import MinValueValidator, MaxValueValidator
-from django.utils.translation import gettext_lazy as _
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 from .mixins import TimeStampedMixin, UUIDMixin
 
@@ -28,13 +28,17 @@ class Filmwork(UUIDMixin, TimeStampedMixin):
     title = models.CharField(_('title'), max_length=255)
     description = models.TextField(_('description'), blank=True)
     creation_date = models.DateField(_('creation_date'))
-    rating = models.FloatField(_('rating'), blank=True,
-                              validators=[MinValueValidator(0),
-                                          MaxValueValidator(100)])
+    rating = models.FloatField(
+        _('rating'),
+        blank=True,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+    )
     type = models.CharField(_('type'), max_length=255)
     genres = models.ManyToManyField(Genre, through='GenreFilmwork')
     persons = models.ManyToManyField(Person, through='PersonFilmwork')
-    certificate = models.CharField(_('certificate'), max_length=512, blank=True)
+    certificate = models.CharField(
+        _('certificate'), max_length=512, blank=True
+    )
 
     class Meta:
         db_table = "content\".\"film_work"
@@ -63,11 +67,10 @@ class PersonFilmwork(UUIDMixin):
     class Meta:
         db_table = "content\".\"person_film_work"
         constraints = [
-            models.UniqueConstraint(fields=['film_work', 'person', 'role'], name='unique_film_work_person_role')
+            models.UniqueConstraint(
+                fields=['film_work', 'person', 'role'],
+                name='unique_film_work_person_role',
+            )
         ]
         verbose_name = _('Actor')
         verbose_name_plural = _('Actors')
-
-
-
-

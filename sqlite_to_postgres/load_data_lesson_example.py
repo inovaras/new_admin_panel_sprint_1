@@ -1,7 +1,17 @@
 import io
+import logging
 import os
+import sys
+
 import psycopg
 from dotenv import load_dotenv
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+handler = logging.StreamHandler(stream=sys.stdout)
+formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 
 if __name__ == '__main__':
@@ -47,7 +57,7 @@ if __name__ == '__main__':
 
         cursor.execute("""SELECT name FROM content.temp_table WHERE id = 'ca211dbc-a6c6-44a5-b238-39fa16bbfe6c'""")
         result = cursor.fetchone()
-        print('Результат выполнения команды UPSERT ', result)
+        logger.debug(f'Результат выполнения команды UPSERT {result}')
 
         # Используем команду COPY
         # Для работы COPY требуется взять данные из файла или подготовить файловый объект через io.StringIO
@@ -61,4 +71,4 @@ if __name__ == '__main__':
 
         cursor.execute("""SELECT name FROM content.temp_table WHERE id = 'ca211dbc-a6c6-44a5-b238-39fa16bbfe6c'""")
         result = cursor.fetchone()
-        print('Результат выполнения команды COPY ', result)
+        logger.debug(f'Результат выполнения команды COPY {result}')
