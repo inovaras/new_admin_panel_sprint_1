@@ -1,23 +1,8 @@
-import uuid
-
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.translation import gettext_lazy as _
 from django.db import models
 
-
-class TimeStampedMixin(models.Model):
-    created = models.DateTimeField(_('created'), auto_now_add=True)
-    modified = models.DateTimeField(_('modified'), auto_now_add=True)
-
-    class Meta:
-        abstract = True
-
-
-class UUIDMixin(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-
-    class Meta:
-        abstract = True
+from .mixins import TimeStampedMixin, UUIDMixin
 
 
 class Genre(UUIDMixin, TimeStampedMixin):
@@ -53,8 +38,8 @@ class Filmwork(UUIDMixin, TimeStampedMixin):
 
     class Meta:
         db_table = "content\".\"film_work"
-        verbose_name = 'Кинопроизведение'
-        verbose_name_plural = 'Кинопроизведения'
+        verbose_name = _('film_work')
+        verbose_name_plural = _('film_works')
 
 
 class GenreFilmwork(UUIDMixin):
@@ -65,20 +50,23 @@ class GenreFilmwork(UUIDMixin):
     class Meta:
         db_table = "content\".\"genre_film_work"
         unique_together = (('film_work_id', 'genre_id'),)
-        verbose_name = 'Жанр фильма'
-        verbose_name_plural = 'Жанры фильма'
+        verbose_name = _('Genre')
+        verbose_name_plural = _('Genres')
 
 
 class PersonFilmwork(UUIDMixin):
     film_work = models.ForeignKey('Filmwork', on_delete=models.CASCADE)
     person = models.ForeignKey('Person', on_delete=models.CASCADE)
+    role = models.CharField(_('role'), max_length=255, null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "content\".\"person_film_work"
-        # unique_together = (('film_work_id', 'person_id'),)
-        verbose_name = 'Актёр'
-        verbose_name_plural = 'Актёры'
+        constraints = [
+            models.UniqueConstraint(fields=['film_work', 'person', 'role'], name='unique_film_work_person_role')
+        ]
+        verbose_name = _('Actor')
+        verbose_name_plural = _('Actors')
 
 
 
