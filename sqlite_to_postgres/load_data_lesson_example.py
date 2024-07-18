@@ -1,17 +1,20 @@
 import io
-
+import os
 import psycopg
+from dotenv import load_dotenv
 
-dsn = {
-    'dbname': 'movies_database',
-    'user': 'app',
-    'password': '123qwe',
-    'host': 'localhost',
-    'port': 5432,
-    'options': '-c search_path=content',
-}
 
 if __name__ == '__main__':
+    env_path = os.path.join(os.path.dirname(__file__), '..', 'config', '.env')
+    load_dotenv(dotenv_path=env_path)
+    dsn = {
+        'dbname': os.getenv('DB_NAME'),
+        'user': os.getenv('DB_USER'),
+        'password': os.getenv('DB_PASSWORD'),
+        'host': os.getenv('DB_HOST'),
+        'port': os.getenv('DB_PORT'),
+        'options': '-c search_path=content',
+    }
     with psycopg.connect(**dsn) as conn, conn.cursor() as cursor:
         # Очищаем таблицу в БД, чтобы загружать данные в пустую таблицу
         cursor.execute("""TRUNCATE content.temp_table""")

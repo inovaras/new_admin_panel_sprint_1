@@ -1,9 +1,11 @@
+import os
 import sqlite3
 import psycopg
 from psycopg import ClientCursor, connection as _connection
 from psycopg.rows import dict_row
 from dataclasses import dataclass
 from typing import List, Generator
+from dotenv import load_dotenv
 
 
 @dataclass
@@ -201,7 +203,17 @@ def load_from_sqlite(connection: sqlite3.Connection, pg_conn: _connection):
 
 
 if __name__ == '__main__':
-    dsl = {'dbname': 'movies_database', 'user': 'app', 'password': '123qwe', 'host': '127.0.0.1', 'port': 5432}
+    env_path = os.path.join(os.path.dirname(__file__), '..', 'config', '.env')
+    load_dotenv(dotenv_path=env_path)
+
+    dsl = {
+        'dbname': os.getenv('DB_NAME'),
+        'user': os.getenv('DB_USER'),
+        'password': os.getenv('DB_PASSWORD'),
+        'host': os.getenv('DB_HOST'),
+        'port': os.getenv('DB_PORT'),
+        'options': '-c search_path=content',
+    }
     with sqlite3.connect('db.sqlite') as sqlite_conn:
         sqlite_conn.row_factory = sqlite3.Row
         with psycopg.connect(
